@@ -1,13 +1,11 @@
 package tictactoe
 import java.util.Scanner
 
-var GRIDSIZE = 0
+const val GRIDSIZE = 3
 val SCANNER = Scanner(System.`in`)
 var userInput = mutableListOf<MutableList<Char>>()
 
 fun playGame() {
-    println("Set the size of grid. (Standard is 3): ")
-    GRIDSIZE = readln().toInt()
     creatingGrid(userInput)
     var userString:String = ""
     do {
@@ -15,7 +13,9 @@ fun playGame() {
     } while(!checkSymbols(userString))
     receiveSymbols(userString)
     printingGrid()
-    printGameResult()
+    // printGameResult()
+    userMove()
+    printingGrid()
 }
 
 // Create the list according to GRIDSIZE
@@ -147,6 +147,40 @@ fun checkSymbols(input:String) = input.all { it in "XO_" }
 fun requestSymbols():String {
     val input = SCANNER.nextLine()
     return input
+}
+
+fun userMove():List<String> {
+    var move:List<String>
+    do {
+        move = readln().split(" ").toList()
+    } while(!checkUserMove(move))
+    return move
+}
+
+fun checkUserMove(move:List<String>):Boolean {
+    var first = move[0].toIntOrNull()
+    var second = move[1].toIntOrNull()
+
+    if(first == null || second == null) {
+        println("You should enter numbers!")
+        return false
+    }
+    else {
+        first -= 1
+        second -= 1
+        if(first >= GRIDSIZE || second >= GRIDSIZE) {
+            println("Coordinates should be from 1 to 3!")
+            return false
+        }
+        else if(userInput[first][second] != '_') {
+            println("This cell is occupied! Choose another one!")
+            return false
+        }
+        else {
+            userInput[first][second] = 'X'
+            return true
+        }
+    }
 }
 
 fun main() {
