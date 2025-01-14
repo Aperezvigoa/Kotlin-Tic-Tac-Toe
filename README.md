@@ -31,7 +31,7 @@ This program allows two players to engage in a game of Tic-Tac-Toe within their 
 
 *  Develop an AI opponent for single-player mode. 🤖
 *  Enhance the user interface for a more engaging experience.
-*  Introduce the option to play on grids of varying sizes. 
+*  Introduce the option to play on grids of varying sizes. // Implemented
 
 ## Contributions 🤝
 
