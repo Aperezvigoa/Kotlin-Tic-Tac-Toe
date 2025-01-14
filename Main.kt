@@ -1,129 +1,154 @@
 package tictactoe
 import java.util.Scanner
 
-val scanner = Scanner(System.`in`)
-const val GRIDSIZE:Int = 3
+var GRIDSIZE = 0
+val SCANNER = Scanner(System.`in`)
+var userInput = mutableListOf<MutableList<Char>>()
 
-fun printGrid(player:List<List<Char>>) {
+fun playGame() {
+    println("Set the size of grid. (Standard is 3): ")
+    GRIDSIZE = readln().toInt()
+    creatingGrid(userInput)
+    var userString:String = ""
+    do {
+        userString = requestSymbols()
+    } while(!checkSymbols(userString))
+    receiveSymbols(userString)
+    printingGrid()
+    printGameResult()
+}
+
+// Create the list according to GRIDSIZE
+fun printingGrid() {
     println("---------")
     for(i in 0 until GRIDSIZE) {
         print("| ")
         for(j in 0 until GRIDSIZE) {
-            print("${player[i][j]} ")
+            print(if(userInput[i][j] == '_')"  " else "${userInput[i][j]} ")
         }
-        print("| \n")
+        println("|")
     }
     println("---------")
 }
 
-fun gameStage(player: List<List<Char>>) {
-    var countX:Int = 0
-    var countO:Int = 0
+fun printGameResult() {
+    val countX = symbolCount('X')
+    val countO = symbolCount('O')
+    val countBlank = symbolCount('_')
 
-    for(i in 0 until GRIDSIZE) {
-        for(j in 0 until  GRIDSIZE) {
-            if(player[i][j] == 'X') {
-                countX++
-            }
-            else if (player[i][j] == 'O') {
-                countO++
-            }
-        }
+    val rowX = checkRow('X')
+    val rowO = checkRow('O')
+    val columnX= checkColumn('X')
+    val columnO = checkColumn('O')
+    val diagX = checkDiagonal('X')
+    val diagO = checkDiagonal('O')
+
+    if(countX - countO >= 2 ||countO - countX >= 2) {
+        println("Impossible")
     }
-
-    var rowXDetected:Boolean = findingRow(player,'X') || findingColumn(player, letter = 'X') || findingDiagonal(player, letter = 'X') || findingReversedDiagonal(player, letter = 'X')
-    var rowODetected:Boolean = findingRow(player,'O') || findingColumn(player, letter = 'O') || findingDiagonal(player, letter = 'O') || findingReversedDiagonal(player, letter = 'O')
-
-    gameResult(player, rowXDetected, rowODetected, countX, countO)
-}
-
-fun gameResult(player: List<List<Char>>, rowX:Boolean, rowO:Boolean, countX:Int, countO:Int) {
-    when {
-        countX - countO >= 2 ||countO - countX >= 2 -> println("Impossible")
-        rowX && rowO -> println("Impossible")
-        rowX -> println("X wins")
-        rowO -> println("O wins")
-        player.any { sublist -> sublist.any {it == '_'} } -> println("Game not finished")
-        else -> println("Draw")
+    else if ((rowO && rowX) || (columnO && columnX) || (diagO && diagX)) {
+        println("Impossible")
     }
-}
-
-fun findingRow(player: List<List<Char>>, letter:Char):Boolean {
-    return (player.any { sublist -> sublist.all {it == letter} })
-}
-
-fun findingDiagonal(player: List<List<Char>>, letter: Char): Boolean {
-    var count = 0
-    for (i in 0 until player.size) {
-        if (player[i][i] == letter) {
-            count++
-            if(count == GRIDSIZE)
-                return true
-        }
+    else if (rowX || columnX || diagX) {
+        println("X wins")
     }
-    return false
-}
-
-fun findingReversedDiagonal(player: List<List<Char>>, letter: Char):Boolean {
-    var count = 0
-    var movingIndex = player[0].size - 1
-    for(i in 0 until player.size) {
-        if(player[i][movingIndex] == letter) {
-            count++
-            movingIndex--
-            if(count == GRIDSIZE)
-                return true
-        }
+    else if (rowO || columnO || diagO) {
+        println("O wins")
     }
-    return false
+    else if (countBlank == 0) {
+        println("Draw")
+    }
+    else
+        println("Game not finished")
 }
 
-fun findingColumn(player: List<List<Char>>, letter: Char): Boolean {
+// Counting symbols X - O - _
+fun symbolCount(symbol: Char):Int {
     var count:Int = 0
-    for(i in 0 until player.size) {
-        for(j in 0 until player.size) {
-            if(player[j][i] == letter) {
+    for (i in 0 until GRIDSIZE) {
+        for (j in 0 until GRIDSIZE) {
+            if(userInput[i][j] == symbol)
                 count++
-                if(count == GRIDSIZE)
-                    return true
-            }
         }
-        count = 0
+    }
+    return count
+}
+
+// Check row win condition
+fun checkRow(symbol:Char):Boolean {
+    if(userInput.any { sublist -> sublist.all { it == symbol } })
+        return true
+    return false
+}
+
+// Check column win condition
+fun checkColumn(symbol:Char):Boolean {
+
+    for(i in 0 until GRIDSIZE) {
+        var count:Int = 0
+        for (j in 0 until GRIDSIZE) {
+            if (userInput[j][i] == symbol)
+                count++
+        }
+        if(count == GRIDSIZE)
+            return true
     }
     return false
 }
 
-fun validatingString():String {
-    var userInput:String
-    do {
-        userInput = scanner.nextLine()
-    } while(!userInput.all {it in "XO_"})
-
-    return userInput
-}
-
-fun stringToList(userInput: String):List<List<Char>> {
-    println(userInput)
-    val multiList= mutableListOf(
-        mutableListOf(' ', ' ', ' '),
-        mutableListOf(' ', ' ', ' '),
-        mutableListOf(' ', ' ', ' ')
-    )
-    var stringIndex = 0
-    for(i in 0 until GRIDSIZE) {
-        for(j in 0 until GRIDSIZE) {
-            multiList[i][j] = userInput[stringIndex]
-            stringIndex++
+fun checkDiagonal(symbol:Char) : Boolean {
+    // Check left to right diagonal
+    var count:Int = 0
+    for (i in 0 until GRIDSIZE) {
+        if (userInput[i][i] == symbol)
+            count++
+    }
+    if(count == GRIDSIZE)
+        return true
+    count = 0
+    // Check right to left diagonal
+    var tempIndex = 0
+    for (i in GRIDSIZE - 1 downTo 0) {
+        if(userInput[tempIndex][i] == symbol) {
+            count++
+            tempIndex++
         }
     }
-    return multiList
+    if(count == GRIDSIZE)
+        return true
+    return false
 }
 
+// Creates the list and sublist following GRIDSIZE
+fun creatingGrid(inputList: MutableList<MutableList<Char>>) {
+    for (i in 0 until GRIDSIZE) {
+        val sublistToAdd = mutableListOf<Char>()
+        for(i in 0 until GRIDSIZE)
+            sublistToAdd.add(' ')
+        userInput.add(sublistToAdd)
+    }
+}
+
+// String input to grid list, this fill with '_' if dont have the necessary length.
+fun receiveSymbols(inputString:String) {
+    var temporalIndex = 0
+    for (i in 0 until GRIDSIZE) {
+        for (j in 0 until GRIDSIZE) {
+            userInput[i][j] = if(temporalIndex >= inputString.length) '_' else inputString[temporalIndex]
+            temporalIndex++
+        }
+    }
+}
+
+// Recive the string and check it. it can contain 'X' 'O' || '_'
+fun checkSymbols(input:String) = input.all { it in "XO_" }
+
+// Request the user the input
+fun requestSymbols():String {
+    val input = SCANNER.nextLine()
+    return input
+}
 
 fun main() {
-    // write your code here
-    val grid = stringToList(validatingString())
-
-    printGrid(grid)
-    gameStage(grid)
+    playGame()
 }
