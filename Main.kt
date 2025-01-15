@@ -1,26 +1,54 @@
+/*
+ * This Tic Tac Toe game was developed as part of a JetBrains Academy exercise.
+ * The project was completed in five distinct phases, which may result in some commented-out code and unused
+ * functions. These artifacts remain as a record of the development process.
+ */
+
 package tictactoe
 import java.util.Scanner
+import kotlin.math.sqrt
 
-const val GRIDSIZE = 3
+var GRIDSIZE = 0
 val SCANNER = Scanner(System.`in`)
 var userInput = mutableListOf<MutableList<Char>>()
 
 fun playGame() {
+    GRIDSIZE = detGridSize()
     creatingGrid(userInput)
-    var userString:String = ""
-    do {
-        userString = requestSymbols()
-    } while(!checkSymbols(userString))
+    val userString:String = ""
     receiveSymbols(userString)
     printingGrid()
     // printGameResult()
-    userMove()
-    printingGrid()
+    shiftSystem()
+}
+
+// Determinating Grid size
+fun detGridSize():Int {
+    println("Enter the desired grid size, the default is 3.")
+    var size = SCANNER.nextInt()
+    if (size < 3)
+        size = 3
+    return size
+}
+
+// Control turnos
+fun shiftSystem() {
+    val symbols:List<Char> = listOf('X', 'O')
+    var gameFinished = false
+
+    do {
+        for (i in symbols) {
+            userMove(i)
+            printingGrid()
+            gameFinished = printGameResult()
+            if(gameFinished)
+                break
+        }
+    } while (!gameFinished)
 }
 
 // Create the list according to GRIDSIZE
 fun printingGrid() {
-    println("---------")
     for(i in 0 until GRIDSIZE) {
         print("| ")
         for(j in 0 until GRIDSIZE) {
@@ -28,10 +56,9 @@ fun printingGrid() {
         }
         println("|")
     }
-    println("---------")
 }
 
-fun printGameResult() {
+fun printGameResult():Boolean {
     val countX = symbolCount('X')
     val countO = symbolCount('O')
     val countBlank = symbolCount('_')
@@ -44,22 +71,29 @@ fun printGameResult() {
     val diagO = checkDiagonal('O')
 
     if(countX - countO >= 2 ||countO - countX >= 2) {
-        println("Impossible")
+        //println("Impossible")
+        return true
     }
     else if ((rowO && rowX) || (columnO && columnX) || (diagO && diagX)) {
-        println("Impossible")
+        //println("Impossible")
+        return true
     }
     else if (rowX || columnX || diagX) {
         println("X wins")
+        return true
     }
     else if (rowO || columnO || diagO) {
         println("O wins")
+        return true
     }
     else if (countBlank == 0) {
         println("Draw")
+        return true
     }
-    else
-        println("Game not finished")
+    else {
+        //println("Game not finished")
+        return false
+    }
 }
 
 // Counting symbols X - O - _
@@ -149,15 +183,15 @@ fun requestSymbols():String {
     return input
 }
 
-fun userMove():List<String> {
+fun userMove(symbol: Char):List<String> {
     var move:List<String>
     do {
         move = readln().split(" ").toList()
-    } while(!checkUserMove(move))
+    } while(!checkUserMove(move, symbol))
     return move
 }
 
-fun checkUserMove(move:List<String>):Boolean {
+fun checkUserMove(move:List<String>, symbol: Char):Boolean {
     var first = move[0].toIntOrNull()
     var second = move[1].toIntOrNull()
 
@@ -168,17 +202,20 @@ fun checkUserMove(move:List<String>):Boolean {
     else {
         first -= 1
         second -= 1
-        if(first >= GRIDSIZE || second >= GRIDSIZE) {
-            println("Coordinates should be from 1 to 3!")
-            return false
-        }
-        else if(userInput[first][second] != '_') {
-            println("This cell is occupied! Choose another one!")
-            return false
-        }
-        else {
-            userInput[first][second] = 'X'
-            return true
+
+        when {
+            (first >= GRIDSIZE || second >= GRIDSIZE) -> {
+                println("Coordinates should be from 1 to 3!")
+                return false
+            }
+            (userInput[first][second] != '_') -> {
+                println("This cell is occupied! Choose another one!")
+                return false
+            }
+            else -> {
+                userInput[first][second] = symbol
+                return true
+            }
         }
     }
 }
